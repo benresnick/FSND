@@ -49,7 +49,7 @@ def create_app(test_config=None):
     categories = Category.query.order_by(Category.id).all()
     if len(categories) == 0:
         abort(404)
-    formatted_categories = [category.format() for category in categories]
+    formatted_categories = {category.id: category.type for category in categories}
 
     return jsonify(
         {
@@ -75,16 +75,20 @@ def create_app(test_config=None):
   def retrieve_questions():
     selection = Question.query.order_by(Question.id).all()
     current_questions = paginate_questions(request, selection)
-
     if len(current_questions) == 0:
         abort(404)
+
+    categories = Category.query.order_by(Category.id).all()
+    if len(categories) == 0:
+        abort(404)
+    formatted_categories = {category.id: category.type for category in categories}
 
     return jsonify(
         {
             "success": True,
             "questions": current_questions,
             "total_questions": len(Question.query.all()),
-            "categories": {},
+            "categories": formatted_categories,
             "current_category": None,
         }
     )
