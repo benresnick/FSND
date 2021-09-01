@@ -49,11 +49,12 @@ def create_app(test_config=None):
     categories = Category.query.order_by(Category.id).all()
     if len(categories) == 0:
         abort(404)
+    formatted_categories = [category.format() for category in categories]
 
     return jsonify(
         {
             "success": True,
-            "categories": categories,
+            "categories": formatted_categories,
             "total_categories": len(categories),
         }
     )
