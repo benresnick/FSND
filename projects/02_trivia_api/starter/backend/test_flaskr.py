@@ -54,14 +54,14 @@ class TriviaTestCase(unittest.TestCase):
         self.assertTrue(len(data["questions"]))
 
     def test_delete_question(self):
-        res = self.client().delete('/questions/5')
+        res = self.client().delete('/questions/2')
         data = json.loads(res.data)
 
-        question = Question.query.filter(Question.id == 5).one_or_none()
+        question = Question.query.filter(Question.id == 2).one_or_none()
 
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data['success'], True)
-        self.assertEqual(data['deleted'], 5)
+        self.assertEqual(data['deleted'], 2)
         self.assertEqual(question, None)
 
     def test_404_if_question_does_not_exist(self):
@@ -77,6 +77,21 @@ class TriviaTestCase(unittest.TestCase):
         data = json.loads(res.data)
         pass
 
+    def test_get_question_search_with_results(self):
+        res = self.client().post("/questions", json={"searchTerm": "title"})
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertTrue(data["total_questions"])
+        self.assertEqual(len(data["questions"]), 2)
+
+    def test_get_question_search_without_results(self):
+        res = self.client().post("/questions", json={"searchTerm": "applejacks"})
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertEqual(data["total_questions"], 0)
+        self.assertEqual(len(data["questions"]), 0)
 # Make the tests conveniently executable
 if __name__ == "__main__":
     unittest.main()
