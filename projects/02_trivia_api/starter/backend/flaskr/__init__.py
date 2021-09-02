@@ -131,6 +131,16 @@ def create_app(test_config=None):
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.
   '''
+  '''
+  @TODO:
+  Create a POST endpoint to get questions based on a search term.
+  It should return any questions for whom the search term
+  is a substring of the question.
+
+  TEST: Search by any phrase. The questions list will update to include
+  only question that include that string within their question.
+  Try using the word "title" to start.
+  '''
   @app.route("/questions", methods=["POST"])
   def create_question():
       body = request.get_json()
@@ -165,16 +175,7 @@ def create_app(test_config=None):
           abort(422)
 
 
-  '''
-  @TODO:
-  Create a POST endpoint to get questions based on a search term.
-  It should return any questions for whom the search term
-  is a substring of the question.
 
-  TEST: Search by any phrase. The questions list will update to include
-  only question that include that string within their question.
-  Try using the word "title" to start.
-  '''
 
   '''
   @TODO:
@@ -184,8 +185,30 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that
   category to be shown.
   '''
+  @app.route("/categories/<int:category_id>/questions")
+  def retrieve_questions_by_category(category_id):
+    try:
+        selection = Question.query.filter(Question.category == category_id).order_by(Question.id).all()
+        current_questions = paginate_questions(request, selection)
+        if len(current_questions) == 0:
+            abort(404)
 
+        categories = Category.query.order_by(Category.id).all()
+        if len(categories) == 0:
+            abort(404)
+        formatted_categories = {category.id: category.type for category in categories}
 
+        return jsonify(
+            {
+                "success": True,
+                "questions": current_questions,
+                "total_questions": len(Question.query.all()),
+                "categories": formatted_categories,
+                "current_category": formatted_categories[category_id],
+            }
+        )
+    except:
+        abort(422)
   '''
   @TODO:
   Create a POST endpoint to get questions to play the quiz.
