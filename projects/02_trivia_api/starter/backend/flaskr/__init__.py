@@ -220,7 +220,7 @@ def create_app(test_config=None):
       body = request.get_json()
 
       previous_questions = body.get("previous_questions", None)
-      quiz_category = body.get("quiz_category", None)["id"]
+      quiz_category = int(body.get("quiz_category", None)["id"])
 
       try:
 
@@ -231,14 +231,14 @@ def create_app(test_config=None):
               category_list = [category.id for category in categories]
               if quiz_category not in category_list:
                   abort(404)
-              questions_left = len(Question.query.filter(Question.category == int(quiz_category)).all()) - len(previous_questions)
+              questions_left = len(Question.query.filter(Question.category == quiz_category).all()) - len(previous_questions)
               if questions_left == 0:
                   return jsonify(
                         {
-                            "question": False
+                            "question": False,
                         }
                   )
-              selection = Question.query.filter(Question.category == int(quiz_category)).filter(~Question.id.in_ (previous_questions)).order_by(Question.id).all()
+              selection = Question.query.filter(Question.category == quiz_category).filter(~Question.id.in_ (previous_questions)).order_by(Question.id).all()
               questions = [question.format() for question in selection]
               question = questions[random.randint(0, len(questions)-1)]
               return jsonify(
@@ -277,4 +277,17 @@ def create_app(test_config=None):
         422,
     )
 
+  @app.errorhandler(400)
+  def unprocessable(error):
+    return (
+        jsonify({"success": False, "error": 400, "message": "bad request"}),
+        400,
+    )
+
+  @app.errorhandler(500)
+  def unprocessable(error):
+    return (
+        jsonify({"success": False, "error": 500, "message": "internal server error"}),
+        500,
+    )
   return app
