@@ -160,6 +160,8 @@ def create_app(test_config=None):
                     }
                 )
           else:
+              if new_question == "" or new_answer == "":
+                  abort(400)
               question = Question(question=new_question, answer=new_answer, difficulty=new_difficulty, category=new_category)
               question.insert()
               return jsonify(
