@@ -114,11 +114,10 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(len(data), 1)
 
     def test_finish_quiz(self):
-        res = self.client().post("/quizzes", json={"previous_questions": [], "quiz_category": {"type": "click", "id": 1}})
+        res = self.client().post("/quizzes", json={"previous_questions": [21, 20, 22], "quiz_category": {"type": "click", "id": 1}})
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
-        self.assertTrue(data["question"])
-        self.assertEqual(len(data), 1)
+        self.assertEqual(data["question"], False)
 
     def test_422_if_category_does_not_exist(self):
         res = self.client().post("/quizzes", json={"previous_questions": [], "quiz_category": {"type": "click", "id": 500}})
