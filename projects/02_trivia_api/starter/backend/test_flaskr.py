@@ -72,13 +72,24 @@ class TriviaTestCase(unittest.TestCase):
     def test_create_new_question(self):
         res = self.client().post("/questions", json=self.new_question)
         data = json.loads(res.data)
-        pass
+        self.assertEqual(res.status_code, 200)
+        self.assertEqual(data["success"], True)
+        self.assertTrue(data["question_id"])
+
+
+    def test_422_if_creating_question_or_answer_is_empty(self):
+        res = self.client().post("/questions", json={"question": "", "answer": "", "difficulty": 1, "category": 1})
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data["success"], False)
+        self.assertEqual(data["message"], "unprocessable")
 
     def test_get_question_search_with_results(self):
         res = self.client().post("/questions", json={"searchTerm": "title"})
         data = json.loads(res.data)
         self.assertEqual(res.status_code, 200)
         self.assertEqual(data["success"], True)
+        self.assertTrue(data["questions"])
         self.assertTrue(data["total_questions"])
         self.assertEqual(len(data["questions"]), 2)
 
