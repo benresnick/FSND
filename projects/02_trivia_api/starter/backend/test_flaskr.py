@@ -40,8 +40,6 @@ class TriviaTestCase(unittest.TestCase):
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(data["success"], True)
-        self.assertTrue(data["total_categories"])
         self.assertTrue(len(data["categories"]))
 
     def test_get_paginated_questions(self):
@@ -49,7 +47,6 @@ class TriviaTestCase(unittest.TestCase):
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(data["success"], True)
         self.assertTrue(data["total_questions"])
         self.assertTrue(len(data["questions"]))
 
@@ -98,17 +95,39 @@ class TriviaTestCase(unittest.TestCase):
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 200)
-        self.assertEqual(data["success"], True)
         self.assertTrue(data["total_questions"])
         self.assertEqual(len(data["questions"]), 4)
 
-    def test_404_if_category_does_not_exist(self):
+    def test_422_if_category_does_not_exist(self):
         res = self.client().get("/categories/1000/questions")
         data = json.loads(res.data)
 
         self.assertEqual(res.status_code, 422)
         self.assertEqual(data["success"], False)
         self.assertEqual(data["message"], "unprocessable")
+
+    def test_get__quiz_question(self):
+        res = self.client().post("/quizzes", json={"previous_questions": [], "quiz_category": {"type": "click", "id": 0}})
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data["question"])
+        self.assertEqual(len(data), 1)
+
+    def test_finish_quiz(self):
+        res = self.client().post("/quizzes", json={"previous_questions": [], "quiz_category": {"type": "click", "id": 1}})
+        data = json.loads(res.data)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data["question"])
+        self.assertEqual(len(data), 1)
+
+    def test_422_if_category_does_not_exist(self):
+        res = self.client().post("/quizzes", json={"previous_questions": [], "quiz_category": {"type": "click", "id": 500}})
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 422)
+        self.assertEqual(data["success"], False)
+        self.assertEqual(data["message"], "unprocessable")
+
 # Make the tests conveniently executable
 if __name__ == "__main__":
     unittest.main()
