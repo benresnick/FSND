@@ -267,7 +267,7 @@ The API will return four error types when requests fail:
       "question": "Which country won the first ever soccer World Cup in 1930?"
     }
   ],
-  "total_questions": 19
+  "total_questions": 2
 }
 ```
 #### DELETE /questions/{question_id}
