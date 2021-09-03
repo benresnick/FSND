@@ -53,9 +53,7 @@ def create_app(test_config=None):
 
     return jsonify(
         {
-            "success": True,
             "categories": formatted_categories,
-            "total_categories": len(categories),
         }
     )
 
@@ -85,7 +83,6 @@ def create_app(test_config=None):
 
     return jsonify(
         {
-            "success": True,
             "questions": current_questions,
             "total_questions": len(Question.query.all()),
             "categories": formatted_categories,
@@ -200,10 +197,8 @@ def create_app(test_config=None):
 
         return jsonify(
             {
-                "success": True,
                 "questions": current_questions,
                 "total_questions": len(Question.query.all()),
-                "categories": formatted_categories,
                 "current_category": formatted_categories[category_id],
             }
         )
@@ -220,6 +215,48 @@ def create_app(test_config=None):
   one question at a time is displayed, the user is allowed to answer
   and shown whether they were correct or not.
   '''
+  @app.route("/quizzes", methods=["POST"])
+  def show_quiz():
+      body = request.get_json()
+
+      previous_questions = body.get("previous_questions", None)
+      quiz_category = body.get("quiz_category", None)["id"]
+
+      try:
+
+          if quiz_category != 0:
+              categories = Category.query.order_by(Category.id).all()
+              if len(categories) == 0:
+                  abort(404)
+              category_list = [category.id for category in categories]
+              if quiz_category not in category_list:
+                  abort(404)
+              questions_left = len(Question.query.filter(Question.category == int(quiz_category)).all()) - len(previous_questions)
+              if questions_left == 0:
+                  return jsonify(
+                        {
+                            "question": False
+                        }
+                  )
+              selection = Question.query.filter(Question.category == int(quiz_category)).filter(~Question.id.in_ (previous_questions)).order_by(Question.id).all()
+              questions = [question.format() for question in selection]
+              question = questions[random.randint(0, len(questions)-1)]
+              return jsonify(
+                    {
+                        "question": question,
+                    }
+                )
+          else:
+              selection = Question.query.filter(~Question.id.in_ (previous_questions)).order_by(Question.id).all()
+              questions = [question.format() for question in selection]
+              question = questions[random.randint(0, len(questions)-1)]
+              return jsonify(
+                    {
+                        "question": question,
+                    }
+                )
+      except:
+          abort(422)
 
   '''
   @TODO:
