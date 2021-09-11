@@ -133,7 +133,7 @@ def requires_auth(permission=''):
         return wrapper
     return requires_auth_decorator
 
-@app.route('/headers')
+@app.route('/image')
 @requires_auth('get:images')
 def headers(payload):
     print(payload)
